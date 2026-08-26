@@ -3,11 +3,18 @@ import sys
 import time
 from typing import Dict, Any
 
-# Add parent backend directory to path if running inside AWS Lambda / standalone
+# Ensure backend modules can be imported
 sys.path.append(os.path.join(os.path.dirname(__file__), "..", "backend"))
 
 from fetch_github import fetch_trending_repos
 from chunker import chunk_repository
+
+try:
+    from app.services.embeddings import embedding_service
+    from app.services.qdrant_client import qdrant_service
+except ImportError:
+    embedding_service = None
+    qdrant_service = None
 
 def lambda_handler(event: Dict[str, Any] = None, context: Any = None) -> Dict[str, Any]:
     """
@@ -18,7 +25,6 @@ def lambda_handler(event: Dict[str, Any] = None, context: Any = None) -> Dict[st
     print("Starting GitHub trending repo ingestion...")
 
     try:
-        # 1. Fetch recent trending repos
         repos = fetch_trending_repos(limit=5)
         print(f"Fetched {len(repos)} repositories from GitHub.")
 
@@ -29,9 +35,18 @@ def lambda_handler(event: Dict[str, Any] = None, context: Any = None) -> Dict[st
 
         print(f"Total chunks created: {len(all_chunks)}")
 
-        # Note: Vector embedding & Qdrant upserting call qdrant_service / embedding_service
-        # which will be active when qdrant_service implementation stub is completed.
-        
+        if embedding_service and qdrant_service and all_chunks:
+            texts = [c["text"] for c in all_chunks]
+            vectors = embedding_service.embed_documents(texts)
+            
+            for chunk, vector in zip(all_chunks, vectors):
+                chunk["vector"] = vector
+                chunk["payload"] = chunk.get("metadata", {})
+                chunk["payload"]["text"] = chunk["text"]
+
+            qdrant_service.upsert_chunks(all_chunks)
+            print(f"Successfully upserted {len(all_chunks)} chunks to vector index.")
+
         last_ingested_at = int(time.time())
         execution_duration = round(time.time() - start_time, 2)
 
@@ -56,6 +71,6 @@ def lambda_handler(event: Dict[str, Any] = None, context: Any = None) -> Dict[st
         }
 
 if __name__ == "__main__":
-    # Local invocation test
     res = lambda_handler()
     print("Local Lambda Execution Result:", res)
+

@@ -1,161 +1,158 @@
-#  Agentic RAG System for GitHub Trending Repositories
+# Agentic RAG System for GitHub Trending Repositories
 
-> **A portfolio-grade Agentic Retrieval-Augmented Generation (CRAG) system that polls GitHub's trending data in real-time, embeds repository documentation, and answers queries using a stateful LangGraph agent, AWS Bedrock, self-hosted Qdrant, and an integrated evaluation feedback loop.**
-
----
-
-##  Executive Overview & Key Differentiators
-
-Most RAG implementations are simple, static "chat with your PDF" scripts. This system introduces three production-grade engineering differentiators:
-
-1. **Near Real-Time Automated Data Ingestion:** Scheduled polling via **AWS Lambda** and **EventBridge Scheduler** (no static manual file uploads).
-2. **Corrective RAG (CRAG) Agentic Loop:** A stateful **LangGraph** engine featuring intent routing, document relevance grading, adaptive query rewriting, and bounded retry caps.
-3. **Self-Evaluating Feedback Loop:** Integrated evaluation scoring (**RAGAS** criteria for context precision and faithfulness) that automatically flags low-scoring chunks for re-indexing.
-4. **Real-Time Token & Telemetry Streaming:** Bi-directional **FastAPI WebSockets** streaming live graph node state transitions alongside **AWS Bedrock Claude** token generation to a minimal **React** dashboard.
-5. **100% Infrastructure as Code (IaC):** Complete **Terraform** specs for AWS ECS Fargate, ALB, VPC, Lambda, IAM roles, and self-hosted Qdrant on EC2.
+Agentic Retrieval-Augmented Generation (Corrective RAG) system that ingests GitHub trending repository data, embeds documentation into Qdrant, and processes developer queries through a stateful LangGraph execution engine powered by AWS Bedrock.
 
 ---
 
-##  System Architecture
+## Key Components
+
+1. **Automated Data Ingestion:** Scheduled ingestion pipeline using AWS Lambda to fetch, chunk, and embed trending repository metadata.
+2. **Corrective RAG (CRAG) Workflow:** Stateful LangGraph execution featuring intent routing, document relevance grading, adaptive query reformulation, and bounded retries.
+3. **Self-Evaluating Feedback Loop:** Evaluation scoring assessing response faithfulness and relevancy, flagging low-confidence context chunks for re-indexing.
+4. **Real-Time Streaming & Telemetry:** WebSocket streaming delivering graph state node transitions and response token generation to the React dashboard.
+5. **Infrastructure as Code:** Terraform module for AWS ECS Fargate, ALB, VPC, Lambda, IAM roles, and EC2 Qdrant deployment.
+
+---
+
+## Architecture Overview
 
 ```mermaid
 graph TD
     subgraph Scheduled Data Ingestion
-        EB[EventBridge Scheduler - 15m Schedule] -->|Triggers| L1[AWS Lambda Ingestion Handler]
-        L1 -->|1. Search Trending Repos| GH[GitHub REST API]
-        L1 -->|2. Overlapping Text Chunking| CH[Text Chunker & Metadata Enrichment]
-        L1 -->|3. Local Vector Embedding| EMB[sentence-transformers bge-small-en]
-        EMB -->|4. Vector Upsert| QD[Self-Hosted Qdrant DB on EC2]
+        EB[EventBridge Scheduler] -->|15m Schedule| L1[AWS Lambda Ingestion Handler]
+        L1 -->|Search Repos| GH[GitHub REST API]
+        L1 -->|Chunk Text| CH[Text Chunker & Metadata Enrichment]
+        L1 -->|Embed Chunks| EMB[SentenceTransformers bge-small-en]
+        EMB -->|Vector Upsert| QD[Qdrant Vector DB]
     end
 
-    subgraph Agentic Corrective RAG Loop
-        UI[React Minimal UI] -->|WebSocket Stream| API[FastAPI Backend - ECS Fargate]
-        API -->|Invoke StateGraph| LG[LangGraph Agent Engine]
+    subgraph Corrective RAG Workflow
+        UI[React UI] -->|WebSocket Stream| API[FastAPI Backend - ECS Fargate]
+        API -->|Invoke Graph| LG[LangGraph Engine]
         
-        LG -->|State Node| RN[route_query Node]
-        RN -->|Route Decision| RET[retrieve Node]
-        RET -->|Vector Similarity Search| QD
+        LG --> RN[route_query Node]
+        RN -->|Route| RET[retrieve Node]
+        RET -->|Vector Search| QD
         
         RET --> GD[grade_documents Node]
-        GD -->|Grade: Irrelevant| RW[rewrite_query Node]
-        RW -->|Corrective Loop - Max 3 Retries| RET
+        GD -->|Irrelevant| RW[rewrite_query Node]
+        RW -->|Retry Loop| RET
         
-        GD -->|Grade: Relevant| GEN[generate Node]
+        GD -->|Relevant| GEN[generate Node]
         GEN -->|Stream Tokens| BDR[AWS Bedrock - Claude 3]
-        GEN --> EVAL[evaluate Node - RAGAS Self-Eval]
+        GEN --> EVAL[evaluate Node]
         
         EVAL -->|Score < 0.7| FLG[flag_reindex Node]
-        FLG -->|Flag Chunk Payload| QD
-        EVAL -->|Score >= 0.7| END[Complete Execution]
+        FLG -->|Flag Chunk| QD
+        EVAL -->|Score >= 0.7| END[Complete]
     end
 ```
 
 ---
 
-##  Project Architecture & File Tree
+## Directory Structure
 
 ```
 agentic-rag/
-├── README.md                           # Documentation
-├── .env.example                         # Environment variable template
+├── README.md
+├── .env.example
 ├── docs/
-│   └── architecture.md                 # Detailed architecture documentation
-├── infra/                              # Terraform Infrastructure as Code (IaC)
-│   ├── main.tf                         # Provider & AWS state setup
-│   ├── vpc.tf                          # VPC, subnets, IGW, security groups
-│   ├── ec2_qdrant.tf                   # Self-hosted Qdrant EC2 instance definition
-│   ├── ecs.tf                          # ECS Fargate cluster, task defs & ALB
-│   ├── lambda_ingestion.tf             # Lambda function & EventBridge 15m rule
-│   ├── iam.tf                          # ECS & Lambda least-privilege IAM roles
-│   ├── variables.tf                    # Parameterized variables
-│   └── outputs.tf                      # ALB DNS & Qdrant endpoints
-├── backend/                            # FastAPI & LangGraph Engine
+│   └── architecture.md
+├── infra/
+│   ├── main.tf
+│   ├── vpc.tf
+│   ├── ec2_qdrant.tf
+│   ├── ecs.tf
+│   ├── lambda_ingestion.tf
+│   ├── iam.tf
+│   ├── variables.tf
+│   └── outputs.tf
+├── backend/
 │   ├── app/
-│   │   ├── main.py                     # FastAPI application entrypoint
-│   │   ├── config.py                   # Pydantic Settings configuration
+│   │   ├── main.py
+│   │   ├── config.py
 │   │   ├── api/
-│   │   │   ├── routes.py               # REST API & query history telemetry
-│   │   │   └── websocket.py            # Real-time WebSocket token streamer
+│   │   │   ├── routes.py
+│   │   │   └── websocket.py
 │   │   ├── graph/
-│   │   │   ├── state.py                # TypedDict state schema & retries accumulator
-│   │   │   ├── graph.py                # LangGraph StateGraph & conditional routers
+│   │   │   ├── state.py
+│   │   │   ├── graph.py
 │   │   │   └── nodes/
-│   │   │       ├── route_query.py      # Intent classifier node
-│   │   │       ├── retrieve.py         # Qdrant vector search node
-│   │   │       ├── grade_documents.py  # LLM document relevance grader node
-│   │   │       ├── rewrite_query.py    # Query reformulation node
-│   │   │       ├── generate.py         # Bedrock answer synthesizer node
-│   │   │       ├── evaluate.py         # Self-evaluation RAGAS node
-│   │   │       └── flag_reindex.py     # Low-score payload flagger node
+│   │   │       ├── route_query.py
+│   │   │       ├── retrieve.py
+│   │   │       ├── grade_documents.py
+│   │   │       ├── rewrite_query.py
+│   │   │       ├── generate.py
+│   │   │       ├── evaluate.py
+│   │   │       └── flag_reindex.py
 │   │   └── services/
-│   │       ├── qdrant_client.py        # Qdrant Python SDK wrapper
-│   │       ├── bedrock_client.py       # boto3 Bedrock Runtime SDK wrapper
-│   │       └── embeddings.py           # sentence-transformers bge-small-en model
-│   ├── requirements.txt                # Python dependencies
-│   └── Dockerfile                      # Container production build
-├── ingestion/                          # Scheduled Ingestion Engine
-│   ├── lambda_handler.py               # AWS Lambda entrypoint
-│   ├── fetch_github.py                 # GitHub REST API repository fetcher
-│   ├── chunker.py                      # Overlapping text chunker & metadata
-│   └── requirements.txt                # Ingestion dependencies
-├── frontend/                           # React Minimalist Monochrome UI
+│   │       ├── qdrant_client.py
+│   │       ├── bedrock_client.py
+│   │       └── embeddings.py
+│   ├── requirements.txt
+│   └── Dockerfile
+├── ingestion/
+│   ├── lambda_handler.py
+│   ├── fetch_github.py
+│   ├── chunker.py
+│   └── requirements.txt
+├── frontend/
 │   ├── src/
 │   │   ├── components/
-│   │   │   ├── ChatPanel.jsx           # Real-time streaming chat interface
-│   │   │   └── Dashboard.jsx           # Query telemetry & analytics dashboard
-│   │   ├── App.jsx                     # Layout container & tab navigation
-│   │   ├── main.jsx                    # React DOM entrypoint
-│   │   └── index.css                   # Tailwind & JetBrains Mono typography
-│   ├── index.html                      # HTML entrypoint
-│   └── package.json                    # Node dependencies
-├── tests/                              # Pytest Suite
-│   ├── conftest.py                     # Test environment setup
-│   ├── test_graph.py                   # Graph state & routing unit tests
-│   └── test_retrieval.py               # Local embedding & vector search tests
-└── .github/workflows/ci.yml           # GitHub Actions CI workflow pipeline
+│   │   │   ├── ChatPanel.jsx
+│   │   │   └── Dashboard.jsx
+│   │   ├── App.jsx
+│   │   ├── main.jsx
+│   │   └── index.css
+│   ├── index.html
+│   └── package.json
+└── tests/
+    ├── conftest.py
+    ├── test_graph.py
+    └── test_retrieval.py
 ```
 
 ---
 
-## ⚡ Quickstart Guide
+## Quickstart Guide
 
-### 1. Prerequisites
+### Prerequisites
 * Python 3.11+
 * Node.js 18+
-* Git
 
-### 2. Backend Setup
+### Backend Setup
 ```bash
 cd backend
 python -m venv venv
-# On Windows:
+
+# Windows
 venv\Scripts\activate
-# On Linux/macOS:
+# Linux/macOS
 source venv/bin/activate
 
 pip install -r requirements.txt
 uvicorn app.main:app --reload --port 8000
 ```
-Verify health: `http://localhost:8000/health`
+Health endpoint: `http://localhost:8000/health`
 
-### 3. Frontend Setup
+### Frontend Setup
 ```bash
 cd frontend
 npm install
 npm run dev
 ```
-Open **`http://localhost:5173`** in your browser.
+Open `http://localhost:5173` in browser.
 
-### 4. Running Unit Tests
+### Unit Tests
 ```bash
 pytest tests/ -v
 ```
 
 ---
 
-## ☁️ Cloud Infrastructure Deployment (Terraform)
+## Infrastructure Deployment
 
-Deploy to AWS using your IAM credentials:
+Deploying with Terraform:
 
 ```bash
 cd infra
@@ -165,18 +162,10 @@ terraform plan
 terraform apply
 ```
 
-Outputs will display the public Application Load Balancer URL (`alb_dns_name`).
+Outputs will return the load balancer endpoint (`alb_dns_name`).
 
 ---
 
-##  Evaluation & Telemetry Metrics
+## License
+Distributed under the MIT License. See `LICENSE` for details.
 
-The system monitors and logs telemetry for every query execution:
-* **Faithfulness & Context Precision:** Automated RAGAS score ($0.0 - 1.0$).
-* **Corrective RAG Path:** Flags whether a query took the `Straight-Through` path or `Corrective RAG (N Retries)` loop.
-* **Latency:** End-to-end WebSocket stream duration.
-
----
-
-## 📄 License
-Distributed under the MIT License. See `LICENSE` for more information.

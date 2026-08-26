@@ -1,10 +1,10 @@
-# System Architecture - Agentic RAG for GitHub Trending Repos
+# System Architecture
 
-This document outlines the detailed system architecture, data ingestion pipelines, and stateful agent execution graph for the GitHub Trending Repos Agentic RAG system.
+System architecture, data ingestion pipelines, and stateful agent execution graph for the GitHub Trending Repos RAG system.
 
 ---
 
-## 🏗️ High-Level Architecture
+## High-Level Architecture
 
 ```mermaid
 graph TD
@@ -30,7 +30,7 @@ graph TD
         
         GD -->|Condition: High Quality| GEN[generate Node]
         GEN -->|Stream Response Tokens| BDR[AWS Bedrock - Claude 3]
-        GEN --> EVAL[evaluate Node - RAGAS Self-Eval]
+        GEN --> EVAL[evaluate Node - Self-Eval]
         
         EVAL -->|Score < 0.7| FLG[flag_reindex Node]
         FLG -->|Flag Payload| QD
@@ -40,7 +40,7 @@ graph TD
 
 ---
 
-## 🔄 Component Breakdown
+## Component Breakdown
 
 ### 1. Scheduled Ingestion Engine (`ingestion/`)
 * **EventBridge Scheduler:** Triggers the Lambda execution every 15–30 minutes.
@@ -59,9 +59,10 @@ graph TD
 
 ---
 
-## ☁️ Infrastructure & AWS Topology (`infra/`)
+## Infrastructure & AWS Topology (`infra/`)
 
 * **VPC Networking:** Public subnets across Availability Zones with strict Security Groups.
 * **Compute:** ECS Fargate service running FastAPI backend behind an Application Load Balancer (ALB).
 * **Vector DB:** Qdrant self-hosted on a `t3.small` EC2 instance using Docker and persistent EBS storage.
 * **IAM Security:** Fine-grained IAM roles granting Bedrock invoke permissions to ECS task and Lambda execution roles without static keys.
+

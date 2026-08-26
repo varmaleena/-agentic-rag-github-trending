@@ -58,7 +58,7 @@ if __name__ == "__main__":
     sample_repo = {
         "repo_name": "example/trending-repo",
         "url": "https://github.com/example/trending-repo",
-        "description": "An awesome framework for agentic RAG.",
+        "description": "High performance text processing framework.",
         "readme_content": "This is a long README file " * 100,
         "stars": 1200,
         "language": "Python"

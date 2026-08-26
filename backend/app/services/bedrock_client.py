@@ -19,10 +19,7 @@ class BedrockClient:
         return self._client
 
     def _generate_contextual_answer(self, prompt: str) -> str:
-        """
-        Synthesizes rich, multi-paragraph, explanatory answers for any user question
-        when running locally without active AWS Bedrock cloud credentials.
-        """
+        """Local fallback response generator when Bedrock credentials are unavailable."""
         match = re.search(r"User Question:\s*(.*)", prompt, re.IGNORECASE)
         query = match.group(1).strip() if match else prompt.strip()
         lower_query = query.lower()

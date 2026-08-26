@@ -16,9 +16,9 @@ export default function ChatPanel() {
   const messagesEndRef = useRef(null);
 
   const samplePrompts = [
-    "TELL ME ABOUT QDRANT VECTOR DATABASE AND OLLAMA",
-    "GIVE ME A BEST GIT REPO TO WORK ON GOOGLE ADK",
-    "Top Python AI repos this week"
+    "Explain Qdrant vector search and Ollama integration",
+    "What are top Android hardware & ADK repositories?",
+    "Show trending Python AI agent frameworks"
   ];
 
   useEffect(() => {
