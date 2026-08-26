@@ -1,10 +1,10 @@
-# 🚀 Agentic RAG System for GitHub Trending Repositories
+#  Agentic RAG System for GitHub Trending Repositories
 
 > **A portfolio-grade Agentic Retrieval-Augmented Generation (CRAG) system that polls GitHub's trending data in real-time, embeds repository documentation, and answers queries using a stateful LangGraph agent, AWS Bedrock, self-hosted Qdrant, and an integrated evaluation feedback loop.**
 
 ---
 
-## 🌟 Executive Overview & Key Differentiators
+##  Executive Overview & Key Differentiators
 
 Most RAG implementations are simple, static "chat with your PDF" scripts. This system introduces three production-grade engineering differentiators:
 
@@ -16,7 +16,7 @@ Most RAG implementations are simple, static "chat with your PDF" scripts. This s
 
 ---
 
-## 🏗️ System Architecture
+##  System Architecture
 
 ```mermaid
 graph TD
@@ -52,7 +52,7 @@ graph TD
 
 ---
 
-## 📂 Project Architecture & File Tree
+##  Project Architecture & File Tree
 
 ```
 agentic-rag/
@@ -169,7 +169,7 @@ Outputs will display the public Application Load Balancer URL (`alb_dns_name`).
 
 ---
 
-## 📊 Evaluation & Telemetry Metrics
+##  Evaluation & Telemetry Metrics
 
 The system monitors and logs telemetry for every query execution:
 * **Faithfulness & Context Precision:** Automated RAGAS score ($0.0 - 1.0$).
