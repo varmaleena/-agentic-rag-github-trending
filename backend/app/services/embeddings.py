@@ -1,6 +1,6 @@
-import os
+from __future__ import annotations
 import time
-from sentence_transformers import SentenceTransformer
+
 from typing import List, Optional
 
 _GLOBAL_MODEL: Optional[SentenceTransformer] = None
@@ -16,6 +16,8 @@ class LocalEmbeddingService:
         """Lazy loader for the sentence-transformer model with global caching to prevent Windows HuggingFace cache collisions."""
         global _GLOBAL_MODEL
         if _GLOBAL_MODEL is None:
+            from sentence_transformers import SentenceTransformer
+
             # Handle potential Windows HuggingFace cache file lock collisions
             for attempt in range(3):
                 try:

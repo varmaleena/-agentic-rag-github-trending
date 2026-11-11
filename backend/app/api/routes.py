@@ -1,71 +1,78 @@
+import logging
 import time
+
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
-from typing import List, Dict, Any, Optional
 
+from app.config import settings
+from app.graph.graph import app_graph
+
+logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api", tags=["RAG Queries"])
+QUERY_HISTORY = []
 
-# Global in-memory store for chat query history and analytics telemetry
-QUERY_HISTORY: List[Dict[str, Any]] = []
 
-def record_query_history(query: str, answer: str, eval_score: float = 0.89, retries: int = 0, graph_path: List[str] = None, latency_seconds: float = 1.0) -> Dict[str, Any]:
-    """Helper function to record executed queries into history for dashboard telemetry."""
-    if graph_path is None:
-        graph_path = ["route_query", "retrieve", "grade_documents", "generate", "evaluate"]
-        
+def graph_config():
+    return {"recursion_limit": 8 + 3 * settings.MAX_RETRIEVAL_RETRIES}
+
+
+def record_query_history(state, latency_seconds):
     record = {
-        "query": query,
-        "answer": answer,
-        "eval_score": round(eval_score, 2),
-        "retries": retries,
-        "graph_path": graph_path,
-        "latency_seconds": round(latency_seconds, 2),
-        "timestamp": int(time.time())
+        "query": state["query"],
+        "answer": state.get("answer", ""),
+        "eval_score": state.get("eval_score"),
+        "error": state.get("error"),
+        "retries": state["retries"],
+        "graph_path": state["graph_path"],
+        "latency_seconds": round(latency_seconds, 3),
+        "timestamp": int(time.time()),
     }
     QUERY_HISTORY.append(record)
     return record
 
+
 class QueryRequest(BaseModel):
     query: str
+
 
 class QueryResponse(BaseModel):
     query: str
     answer: str
-    eval_score: float
+    eval_score: float | None
+    error: str | None
     retries: int
-    graph_path: List[str]
+    graph_path: list[str]
     latency_seconds: float
+    timestamp: int
+
 
 @router.post("/query", response_model=QueryResponse)
 async def execute_query(req: QueryRequest):
-    """
-    REST endpoint to submit a question about GitHub trending repos and record analytics.
-    """
-    start_time = time.time()
     query = req.query.strip()
-    
     if not query:
-        raise HTTPException(status_code=400, detail="Query string cannot be empty.")
+        raise HTTPException(400, "Query string cannot be empty.")
 
-    answer = f"Synthesized response for query: '{query}'."
-    latency = round(time.time() - start_time, 2)
-    record = record_query_history(query=query, answer=answer, eval_score=0.91, retries=0, latency_seconds=latency)
-    
+    started = time.monotonic()
+    try:
+        state = await app_graph.ainvoke({"query": query}, config=graph_config())
+    except Exception:
+        logger.exception("Query execution failed")
+        raise HTTPException(502, "Query execution failed.") from None
+
+    record = record_query_history(state, time.monotonic() - started)
+    if not record["answer"]:
+        raise HTTPException(502, record["error"])
     return record
+
 
 @router.get("/dashboard/stats")
 async def get_dashboard_stats():
-    """
-    Endpoint returning real-time dashboard metrics: query history, avg latency, and eval scores.
-    """
-    total_queries = len(QUERY_HISTORY)
-    avg_latency = round(sum(q["latency_seconds"] for q in QUERY_HISTORY) / total_queries, 2) if total_queries > 0 else 0.0
-    avg_eval_score = round(sum(q["eval_score"] for q in QUERY_HISTORY) / total_queries, 2) if total_queries > 0 else 0.0
-    
+    total = len(QUERY_HISTORY)
+    scores = [q["eval_score"] for q in QUERY_HISTORY if q["eval_score"] is not None]
     return {
-        "last_ingested_at": int(time.time() - 900),  # approx 15 mins ago
-        "total_queries": total_queries,
-        "avg_latency_seconds": avg_latency,
-        "avg_eval_score": avg_eval_score,
-        "recent_queries": list(reversed(QUERY_HISTORY[-20:]))
+        "last_ingested_at": None,
+        "total_queries": total,
+        "avg_latency_seconds": round(sum(q["latency_seconds"] for q in QUERY_HISTORY) / total, 3) if total else 0,
+        "avg_eval_score": round(sum(scores) / len(scores), 3) if scores else None,
+        "recent_queries": list(reversed(QUERY_HISTORY[-20:])),
     }

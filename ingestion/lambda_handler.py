@@ -1,76 +1,74 @@
-import os
+import logging
 import sys
 import time
-from typing import Dict, Any
+from collections import defaultdict
+from pathlib import Path
 
-# Ensure backend modules can be imported
-sys.path.append(os.path.join(os.path.dirname(__file__), "..", "backend"))
+import httpx
 
-from fetch_github import fetch_trending_repos
+sys.path.append(str(Path(__file__).resolve().parent.parent / "backend"))
+
+from fetch_github import fetch_repository, fetch_trending_repos
 from chunker import chunk_repository
+from screening import contains_prompt_injection
+from app.services.embeddings import embedding_service
+from app.services.qdrant_client import qdrant_service
 
-try:
-    from app.services.embeddings import embedding_service
-    from app.services.qdrant_client import qdrant_service
-except ImportError:
-    embedding_service = None
-    qdrant_service = None
+logger = logging.getLogger(__name__)
 
-def lambda_handler(event: Dict[str, Any] = None, context: Any = None) -> Dict[str, Any]:
-    """
-    AWS Lambda entrypoint triggered by EventBridge Scheduler.
-    Fetches trending GitHub repos, chunks text, generates embeddings, and upserts into Qdrant.
-    """
-    start_time = time.time()
-    print("Starting GitHub trending repo ingestion...")
 
-    try:
-        repos = fetch_trending_repos(limit=5)
-        print(f"Fetched {len(repos)} repositories from GitHub.")
+def index_repository(repo):
+    if any(contains_prompt_injection(repo[field]) for field in ("description", "readme_content")):
+        logger.warning("Skipped repository with suspected prompt injection: %s", repo["repo_name"])
+        return set()
+    chunks = chunk_repository(repo)
+    vectors = embedding_service.embed_documents([chunk["text"] for chunk in chunks])
+    for chunk, vector in zip(chunks, vectors, strict=True):
+        chunk["vector"] = vector
+        chunk["payload"] = {**chunk["metadata"], "text": chunk["text"], "needs_reindex": False}
+    qdrant_service.upsert_chunks(chunks)
+    return {chunk["id"] for chunk in chunks}
 
-        all_chunks = []
-        for repo in repos:
-            chunks = chunk_repository(repo)
-            all_chunks.extend(chunks)
 
-        print(f"Total chunks created: {len(all_chunks)}")
+def lambda_handler(event=None, context=None):
+    qdrant_service.create_collection_if_not_exists()
+    flagged = defaultdict(set)
+    for point in qdrant_service.flagged_chunks():
+        flagged[point.payload["repo_name"]].add(point.id)
 
-        if embedding_service and qdrant_service and all_chunks:
-            texts = [c["text"] for c in all_chunks]
-            vectors = embedding_service.embed_documents(texts)
-            
-            for chunk, vector in zip(all_chunks, vectors):
-                chunk["vector"] = vector
-                chunk["payload"] = chunk.get("metadata", {})
-                chunk["payload"]["text"] = chunk["text"]
+    chunks_indexed = 0
+    refreshed = set()
+    for repo_name, point_ids in flagged.items():
+        try:
+            current_ids = index_repository(fetch_repository(repo_name))
+        except httpx.HTTPStatusError as exc:
+            if exc.response.status_code != 404:
+                raise
+            current_ids = set()
+            logger.warning("Repository unavailable on GitHub: %s", repo_name)
 
-            qdrant_service.upsert_chunks(all_chunks)
-            print(f"Successfully upserted {len(all_chunks)} chunks to vector index.")
+        if obsolete_ids := point_ids - current_ids:
+            qdrant_service.client.delete(
+                qdrant_service.collection_name, points_selector=list(obsolete_ids), wait=True
+            )
+        chunks_indexed += len(current_ids)
+        refreshed.add(repo_name)
 
-        last_ingested_at = int(time.time())
-        execution_duration = round(time.time() - start_time, 2)
+    repos = fetch_trending_repos(limit=5)
+    for repo in repos:
+        if repo["repo_name"] not in refreshed:
+            chunks_indexed += len(index_repository(repo))
+            refreshed.add(repo["repo_name"])
 
-        return {
-            "statusCode": 200,
-            "body": {
-                "message": "Ingestion completed successfully.",
-                "repos_processed": len(repos),
-                "total_chunks": len(all_chunks),
-                "last_ingested_at": last_ingested_at,
-                "duration_seconds": execution_duration
-            }
-        }
-    except Exception as e:
-        print(f"Ingestion failed with error: {str(e)}")
-        return {
-            "statusCode": 500,
-            "body": {
-                "message": "Ingestion failed.",
-                "error": str(e)
-            }
-        }
+    return {
+        "statusCode": 200,
+        "body": {
+            "repos_processed": len(refreshed),
+            "total_chunks": chunks_indexed,
+            "last_ingested_at": int(time.time()),
+        },
+    }
+
 
 if __name__ == "__main__":
-    res = lambda_handler()
-    print("Local Lambda Execution Result:", res)
-
+    print(lambda_handler())

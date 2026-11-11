@@ -1,67 +1,54 @@
-import os
-import httpx
 import base64
-from typing import List, Dict, Any
+import os
+from datetime import date, timedelta
+
+import httpx
 
 GITHUB_API_URL = "https://api.github.com"
 
-def fetch_trending_repos(limit: int = 10, min_stars: int = 50) -> List[Dict[str, Any]]:
-    """
-    Fetches recently created/starred trending GitHub repositories via the GitHub REST API.
-    Returns repo name, description, README content, stars, language, and URL.
-    """
-    token = os.environ.get("GITHUB_TOKEN", "")
-    headers = {
-        "Accept": "application/vnd.github.v3+json",
-        "User-Agent": "Agentic-RAG-Ingestion"
+
+def github_client():
+    headers = {"Accept": "application/vnd.github+json", "User-Agent": "Agentic-RAG-Ingestion"}
+    if token := os.environ.get("GITHUB_TOKEN"):
+        headers["Authorization"] = f"Bearer {token}"
+    return httpx.Client(base_url=GITHUB_API_URL, headers=headers, timeout=15, follow_redirects=True)
+
+
+def repository_with_readme(client, item):
+    response = client.get(f"/repos/{item['full_name']}/readme")
+    content = ""
+    if response.status_code != 404:
+        response.raise_for_status()
+        readme = response.json()
+        if readme["encoding"] != "base64":
+            raise ValueError("Unsupported README encoding")
+        content = base64.b64decode(readme["content"]).decode("utf-8", errors="replace")
+
+    return {
+        "repo_name": item["full_name"],
+        "description": item.get("description") or "",
+        "readme_content": content,
+        "stars": item["stargazers_count"],
+        "language": item.get("language") or "Unknown",
+        "url": item["html_url"],
     }
-    if token:
-        headers["Authorization"] = f"token {token}"
 
-    # Search for repositories created or active recently sorted by stars
-    query = f"stars:>{min_stars}"
-    search_url = f"{GITHUB_API_URL}/search/repositories?q={query}&sort=stars&order=desc&per_page={limit}"
 
-    repos = []
-    with httpx.Client(headers=headers, timeout=15.0) as client:
-        res = client.get(search_url)
-        if res.status_code != 200:
-            print(f"GitHub API Error: {res.status_code} - {res.text}")
-            return repos
-        
-        items = res.json().get("items", [])
-        for item in items:
-            owner = item["owner"]["login"]
-            repo_name = item["name"]
-            full_name = item["full_name"]
-            
-            # Fetch README content for the repo
-            readme_url = f"{GITHUB_API_URL}/repos/{owner}/{repo_name}/readme"
-            readme_res = client.get(readme_url)
-            readme_content = ""
-            if readme_res.status_code == 200:
-                readme_data = readme_res.json()
-                if readme_data.get("encoding") == "base64":
-                    try:
-                        readme_content = base64.b64decode(readme_data["content"]).decode("utf-8", errors="ignore")
-                    except Exception:
-                        readme_content = ""
+def fetch_repository(repo_name):
+    with github_client() as client:
+        response = client.get(f"/repos/{repo_name}")
+        response.raise_for_status()
+        return repository_with_readme(client, response.json())
 
-            repos.append({
-                "repo_name": full_name,
-                "description": item.get("description") or "",
-                "readme_content": readme_content,
-                "stars": item.get("stargazers_count", 0),
-                "language": item.get("language") or "Unknown",
-                "url": item.get("html_url", ""),
-                "pushed_at": item.get("pushed_at", "")
-            })
 
-    return repos
-
-if __name__ == "__main__":
-    print("Testing GitHub API fetcher...")
-    fetched = fetch_trending_repos(limit=2)
-    print(f"Fetched {len(fetched)} repositories.")
-    for r in fetched:
-        print(f"- {r['repo_name']} ({r['stars']} stars, {r['language']})")
+def fetch_trending_repos(limit=10, min_stars=50):
+    cutoff = date.today() - timedelta(days=30)
+    with github_client() as client:
+        response = client.get("/search/repositories", params={
+            "q": f"stars:>{min_stars} created:>={cutoff.isoformat()}",
+            "sort": "stars",
+            "order": "desc",
+            "per_page": limit,
+        })
+        response.raise_for_status()
+        return [repository_with_readme(client, item) for item in response.json()["items"]]

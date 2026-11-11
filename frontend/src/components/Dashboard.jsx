@@ -6,7 +6,7 @@ export default function Dashboard() {
     last_ingested_at: null,
     total_queries: 0,
     avg_latency_seconds: 0,
-    avg_eval_score: 0,
+    avg_eval_score: null,
     recent_queries: []
   });
   const [isLoading, setIsLoading] = useState(false);
@@ -97,7 +97,7 @@ export default function Dashboard() {
             <Award className="w-3.5 h-3.5" />
           </div>
           <div className="text-sm font-bold text-white">
-            {stats.avg_eval_score} <span className="text-[10px] text-zinc-500 font-normal">/ 1.0</span>
+            {stats.avg_eval_score ?? "—"} <span className="text-[10px] text-zinc-500 font-normal">/ 1.0</span>
           </div>
           <span className="text-[10px] text-zinc-400 mt-2 block">
             Threshold: ≥ 0.70
@@ -146,7 +146,7 @@ export default function Dashboard() {
                       )}
                     </td>
                     <td className="px-3 py-2.5 font-mono text-center">{q.retries}</td>
-                    <td className="px-3 py-2.5 font-mono text-white font-bold">{q.eval_score}</td>
+                    <td className="px-3 py-2.5 font-mono text-white font-bold">{q.eval_score ?? "—"}</td>
                     <td className="px-3 py-2.5 font-mono text-zinc-500">{q.latency_seconds}s</td>
                   </tr>
                 ))

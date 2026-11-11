@@ -5,7 +5,7 @@ export default function ChatPanel() {
   const [messages, setMessages] = useState([
     {
       sender: 'bot',
-      text: "Welcome to **Agentic RAG Studio**.\n\nAsk questions about trending GitHub repositories. The system fetches real-time repo data every 15 minutes, embeds text into Qdrant, and runs a self-evaluating LangGraph loop.",
+      text: "Welcome to **Agentic RAG Studio**.\n\nAsk questions about trending GitHub repositories. Answers use repository documentation indexed in Qdrant.",
       eval_score: null
     }
   ]);
@@ -47,19 +47,15 @@ export default function ChatPanel() {
           });
         } else if (data.type === 'stream_end') {
           setIsStreaming(false);
-        } else if (data.type === 'node_transition' && data.node === 'evaluate') {
           setActiveNode(null);
-          if (data.eval_score) {
-            setMessages(prev => {
-              if (prev.length === 0) return prev;
-              const lastIndex = prev.length - 1;
-              const lastMsg = prev[lastIndex];
-              if (lastMsg && lastMsg.sender === 'bot') {
-                return [...prev.slice(0, lastIndex), { ...lastMsg, eval_score: data.eval_score }];
-              }
-              return prev;
-            });
-          }
+          setMessages(prev => [
+            ...prev.slice(0, -1),
+            { sender: 'bot', text: data.answer, eval_score: data.eval_score, error: data.error }
+          ]);
+        } else if (data.type === 'error') {
+          setIsStreaming(false);
+          setActiveNode(null);
+          setMessages(prev => [...prev, { sender: 'bot', text: data.message }]);
         }
       } catch (err) {
         console.error('WS Error:', err);
@@ -82,6 +78,7 @@ export default function ChatPanel() {
     setMessages(prev => [...prev, { sender: 'user', text: query }]);
 
     if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
+      setIsStreaming(true);
       wsRef.current.send(JSON.stringify({ query }));
     }
 
@@ -92,8 +89,10 @@ export default function ChatPanel() {
     { key: 'route_query', label: 'Route' },
     { key: 'retrieve', label: 'Retrieve' },
     { key: 'grade_documents', label: 'Grade' },
+    { key: 'rewrite_query', label: 'Rewrite' },
     { key: 'generate', label: 'Generate' },
-    { key: 'evaluate', label: 'Evaluate' }
+    { key: 'evaluate', label: 'Evaluate' },
+    { key: 'flag_reindex', label: 'Flag' }
   ];
 
   return (
@@ -144,7 +143,8 @@ export default function ChatPanel() {
             }`}>
               <div className="whitespace-pre-wrap">{msg.text}</div>
 
-              {msg.eval_score && (
+              {msg.error && <p role="status">{msg.error}</p>}
+              {msg.eval_score != null && (
                 <div className="mt-3 pt-2 border-t border-zinc-800 flex items-center justify-between text-[10px] font-mono text-zinc-400">
                   <span>Self-Eval Score</span>
                   <span className="text-white font-bold bg-zinc-800 px-2 py-0.5 rounded border border-zinc-700">

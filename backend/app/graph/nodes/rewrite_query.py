@@ -1,5 +1,5 @@
 from typing import Dict, Any
-from app.services.bedrock_client import bedrock_service
+from app.services.llm import llm_service
 
 def rewrite_query_node(state: Dict[str, Any]) -> Dict[str, Any]:
     """
@@ -21,7 +21,7 @@ Initial Query: "{query}"
 Output ONLY the optimized query string without any preamble or explanation:"""
 
     try:
-        rewritten = bedrock_service.generate(prompt=prompt, max_tokens=100, temperature=0.5).strip()
+        rewritten = llm_service.generate(prompt=prompt, max_tokens=100, temperature=0.5).strip()
         # Clean quotes if present
         rewritten = rewritten.strip('"').strip("'")
     except Exception as e:

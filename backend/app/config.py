@@ -1,7 +1,12 @@
-import os
+from typing import Literal
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 class Settings(BaseSettings):
+    LLM_PROVIDER: Literal["vertex", "bedrock"] = "bedrock"
+    GOOGLE_CLOUD_PROJECT: str = ""
+    GOOGLE_CLOUD_LOCATION: str = "global"
+    GEMINI_MODEL: str = ""
+
     AWS_REGION: str = "us-east-1"
     BEDROCK_MODEL_ID: str = "anthropic.claude-3-haiku-20240307-v1:0"
     

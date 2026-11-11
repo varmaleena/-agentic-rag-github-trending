@@ -1,16 +1,17 @@
-from typing import TypedDict, List, Dict, Any, Optional, Annotated
 import operator
+from typing import Annotated, Any, TypedDict
 
-class AgentState(TypedDict):
-    """
-    Typed dictionary representing the shared state across LangGraph node transitions.
-    Includes accumulator reducers for loop iteration tracking.
-    """
+
+class AgentState(TypedDict, total=False):
     query: str
-    rewritten_query: Optional[str]
-    documents: List[Dict[str, Any]]
-    relevance_grade: str  # "yes" or "no"
+    rewritten_query: str
+    documents: list[dict[str, Any]]
+    relevance_grade: str
     answer: str
-    eval_score: float
-    retries: Annotated[int, operator.add]  # Accumulator pattern to safely count retries across loop iterations
-    graph_path: List[str]  # Log of graph nodes executed for dashboard tracking
+    reference_answer: str
+    eval_score: float | None
+    faithfulness: float
+    relevancy: float
+    error: str
+    retries: Annotated[int, operator.add]
+    graph_path: Annotated[list[str], operator.add]

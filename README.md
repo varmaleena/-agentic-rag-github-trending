@@ -1,171 +1,55 @@
-# Agentic RAG System for GitHub Trending Repositories
+# Agentic RAG for GitHub repositories
 
-Agentic Retrieval-Augmented Generation (Corrective RAG) system that ingests GitHub trending repository data, embeds documentation into Qdrant, and processes developer queries through a stateful LangGraph execution engine powered by AWS Bedrock.
+FastAPI serves a LangGraph workflow over GitHub README chunks indexed in Qdrant. The scheduled job searches for popular public repositories created in the past 30 days. Terraform defines a 15-minute ingestion schedule.
 
----
+- `POST /api/query` and `/ws/chat` execute the same graph. The WebSocket sends node transitions, streamed answer text, and the final score, retries, and graph path.
+- The graph grades retrieved context and rewrites the query up to three times by default. If retrieval still lacks relevant evidence, the answer says so. Failed and skipped evaluations have a null score and are excluded from the dashboard average.
+- A score below the configured threshold flags retrieved points in Qdrant. The next ingestion run refreshes flagged repositories before fetching new ones. Deterministic point IDs let ingestion update chunks in place.
+- README text is treated as untrusted source data in prompts. A heuristic ingestion filter skips repositories containing common instruction-override or secret-extraction patterns. The filter can miss obfuscated attacks and skip benign documentation that quotes those patterns.
 
-## Key Components
+## Run locally
 
-1. **Automated Data Ingestion:** Scheduled ingestion pipeline using AWS Lambda to fetch, chunk, and embed trending repository metadata.
-2. **Corrective RAG (CRAG) Workflow:** Stateful LangGraph execution featuring intent routing, document relevance grading, adaptive query reformulation, and bounded retries.
-3. **Self-Evaluating Feedback Loop:** Evaluation scoring assessing response faithfulness and relevancy, flagging low-confidence context chunks for re-indexing.
-4. **Real-Time Streaming & Telemetry:** WebSocket streaming delivering graph state node transitions and response token generation to the React dashboard.
-5. **Infrastructure as Code:** Terraform module for AWS ECS Fargate, ALB, VPC, Lambda, IAM roles, and EC2 Qdrant deployment.
+Install Python 3.11+, Node.js, and run a Qdrant instance reachable at `localhost:6333` or configure its host and port. From the repository root, install dependencies and populate the index. First use downloads the BGE embedding model.
 
----
-
-## Architecture Overview
-
-```mermaid
-graph TD
-    subgraph Scheduled Data Ingestion
-        EB[EventBridge Scheduler] -->|15m Schedule| L1[AWS Lambda Ingestion Handler]
-        L1 -->|Search Repos| GH[GitHub REST API]
-        L1 -->|Chunk Text| CH[Text Chunker & Metadata Enrichment]
-        L1 -->|Embed Chunks| EMB[SentenceTransformers bge-small-en]
-        EMB -->|Vector Upsert| QD[Qdrant Vector DB]
-    end
-
-    subgraph Corrective RAG Workflow
-        UI[React UI] -->|WebSocket Stream| API[FastAPI Backend - ECS Fargate]
-        API -->|Invoke Graph| LG[LangGraph Engine]
-        
-        LG --> RN[route_query Node]
-        RN -->|Route| RET[retrieve Node]
-        RET -->|Vector Search| QD
-        
-        RET --> GD[grade_documents Node]
-        GD -->|Irrelevant| RW[rewrite_query Node]
-        RW -->|Retry Loop| RET
-        
-        GD -->|Relevant| GEN[generate Node]
-        GEN -->|Stream Tokens| BDR[AWS Bedrock - Claude 3]
-        GEN --> EVAL[evaluate Node]
-        
-        EVAL -->|Score < 0.7| FLG[flag_reindex Node]
-        FLG -->|Flag Chunk| QD
-        EVAL -->|Score >= 0.7| END[Complete]
-    end
+```sh
+python -m pip install -r backend/requirements.txt
+python ingestion/lambda_handler.py
 ```
 
----
+Ingestion reads `GITHUB_TOKEN` from the environment if set. Run the API from the repository root.
 
-## Directory Structure
-
-```
-agentic-rag/
-├── README.md
-├── .env.example
-├── docs/
-│   └── architecture.md
-├── infra/
-│   ├── main.tf
-│   ├── vpc.tf
-│   ├── ec2_qdrant.tf
-│   ├── ecs.tf
-│   ├── lambda_ingestion.tf
-│   ├── iam.tf
-│   ├── variables.tf
-│   └── outputs.tf
-├── backend/
-│   ├── app/
-│   │   ├── main.py
-│   │   ├── config.py
-│   │   ├── api/
-│   │   │   ├── routes.py
-│   │   │   └── websocket.py
-│   │   ├── graph/
-│   │   │   ├── state.py
-│   │   │   ├── graph.py
-│   │   │   └── nodes/
-│   │   │       ├── route_query.py
-│   │   │       ├── retrieve.py
-│   │   │       ├── grade_documents.py
-│   │   │       ├── rewrite_query.py
-│   │   │       ├── generate.py
-│   │   │       ├── evaluate.py
-│   │   │       └── flag_reindex.py
-│   │   └── services/
-│   │       ├── qdrant_client.py
-│   │       ├── bedrock_client.py
-│   │       └── embeddings.py
-│   ├── requirements.txt
-│   └── Dockerfile
-├── ingestion/
-│   ├── lambda_handler.py
-│   ├── fetch_github.py
-│   ├── chunker.py
-│   └── requirements.txt
-├── frontend/
-│   ├── src/
-│   │   ├── components/
-│   │   │   ├── ChatPanel.jsx
-│   │   │   └── Dashboard.jsx
-│   │   ├── App.jsx
-│   │   ├── main.jsx
-│   │   └── index.css
-│   ├── index.html
-│   └── package.json
-└── tests/
-    ├── conftest.py
-    ├── test_graph.py
-    └── test_retrieval.py
+```sh
+python -m uvicorn app.main:app --app-dir backend --port 8000
 ```
 
----
+The default provider is Bedrock, using the AWS SDK credential chain and the configured `BEDROCK_MODEL_ID`. To use Vertex AI, enable the API in your Google Cloud project, configure Application Default Credentials, and set `LLM_PROVIDER=vertex`, `GOOGLE_CLOUD_PROJECT`, and `GEMINI_MODEL`. `GOOGLE_CLOUD_LOCATION` defaults to `global`. See the [Vertex AI streaming example](https://docs.cloud.google.com/vertex-ai/generative-ai/docs/samples/googlegenaisdk-textgen-with-txt-stream).
 
-## Quickstart Guide
+In a second terminal, run the frontend and open the local URL printed by Vite.
 
-### Prerequisites
-* Python 3.11+
-* Node.js 18+
-
-### Backend Setup
-```bash
-cd backend
-python -m venv venv
-
-# Windows
-venv\Scripts\activate
-# Linux/macOS
-source venv/bin/activate
-
-pip install -r requirements.txt
-uvicorn app.main:app --reload --port 8000
-```
-Health endpoint: `http://localhost:8000/health`
-
-### Frontend Setup
-```bash
+```sh
 cd frontend
-npm install
+npm ci
 npm run dev
 ```
-Open `http://localhost:5173` in browser.
 
-### Unit Tests
-```bash
-pytest tests/ -v
+Run the offline tests from the repository root.
+
+```sh
+python -m pytest tests -q
 ```
 
----
+## Benchmark
 
-## Infrastructure Deployment
+The evaluation harness compares one-pass RAG against the corrective graph on the same Qdrant collection and provider. Use a frozen collection and a JSONL file with 30–50 distinct reviewed questions. Each row needs `question`, `answer`, `repo` (owner/name), and `chunk_index` for a reference chunk containing the answer. Keep ingestion paused during the run so the corpus stays fixed. The benchmark graph does not write reindex flags.
 
-Deploying with Terraform:
-
-```bash
-cd infra
-aws configure
-terraform init
-terraform plan
-terraform apply
+```sh
+python backend/evaluate_rag.py golden.jsonl --output benchmark-results.json
 ```
 
-Outputs will return the load balancer endpoint (`alb_dns_name`).
+Hit@5 checks whether the final retrieval contains the reference chunk. The judge scores faithfulness to the retrieved sources and relevancy to the question with the expected answer as a reference. The generated Markdown table reports coverage for each judge metric.
 
----
+The reviewed golden set and live benchmark results are pending.
 
-## License
-Distributed under the MIT License. See `LICENSE` for details.
+## Deployment
 
+The AWS Terraform configuration is under `infra/`. It expects a built backend image and an `ingestion.zip` deployment package. Include the ingestion modules, the backend `app` package, and the runtime dependencies in the ingestion deployment package. Local tests use mocked model calls and an in-memory Qdrant instance.

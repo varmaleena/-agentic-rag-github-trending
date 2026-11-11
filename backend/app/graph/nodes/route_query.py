@@ -1,5 +1,5 @@
 from typing import Dict, Any
-from app.services.bedrock_client import bedrock_service
+from app.services.llm import llm_service
 
 def route_query_node(state: Dict[str, Any]) -> Dict[str, Any]:
     """
@@ -20,10 +20,10 @@ Respond with ONLY one word:
 
 Decision:"""
 
-    decision = bedrock_service.generate(prompt=prompt, max_tokens=10, temperature=0.0).strip().lower()
+    decision = llm_service.generate(prompt=prompt, max_tokens=10, temperature=0.0).strip().lower()
     
     # Fallback default to retrieve if unclear
-    route_decision = "retrieve" if "retrieve" in decision else "generate_direct"
+    route_decision = "generate_direct" if decision == "generate_direct" else "retrieve"
     
     return {
         "relevance_grade": route_decision

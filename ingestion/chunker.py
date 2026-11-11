@@ -1,4 +1,5 @@
 import time
+from uuid import NAMESPACE_URL, uuid5
 from typing import List, Dict, Any
 
 def chunk_text(text: str, chunk_size: int = 1500, chunk_overlap: int = 200) -> List[str]:
@@ -38,7 +39,7 @@ def chunk_repository(repo: Dict[str, Any]) -> List[Dict[str, Any]]:
 
     processed_chunks = []
     for idx, content in enumerate(text_chunks):
-        chunk_id = f"{repo_name.replace('/', '_')}_chunk_{idx}"
+        chunk_id = str(uuid5(NAMESPACE_URL, f"github:{repo_name.lower()}:{idx}"))
         processed_chunks.append({
             "id": chunk_id,
             "text": content,

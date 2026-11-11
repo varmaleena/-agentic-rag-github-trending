@@ -29,7 +29,7 @@ graph TD
         RW -->|Retry Loop - Max 3| RET
         
         GD -->|Condition: High Quality| GEN[generate Node]
-        GEN -->|Stream Response Tokens| BDR[AWS Bedrock - Claude 3]
+        GEN -->|Stream Response Tokens| BDR[Bedrock or Vertex AI]
         GEN --> EVAL[evaluate Node - Self-Eval]
         
         EVAL -->|Score < 0.7| FLG[flag_reindex Node]
@@ -43,8 +43,8 @@ graph TD
 ## Component Breakdown
 
 ### 1. Scheduled Ingestion Engine (`ingestion/`)
-* **EventBridge Scheduler:** Triggers the Lambda execution every 15–30 minutes.
-* **GitHub API Fetcher:** Queries recently starred/created repositories dynamically.
+* **EventBridge Scheduler:** Triggers the Lambda execution every 15 minutes.
+* **GitHub API Fetcher:** Queries popular public repositories created in the past 30 days.
 * **Chunker:** Segments repo READMEs and descriptions into ~300-500 token overlapping chunks with metadata (`repo_name`, `url`, `ingested_at`).
 * **Local Embedding Engine:** Encodes text chunks locally via `bge-small-en` (384-dim vectors) before storing in Qdrant.
 
@@ -52,8 +52,8 @@ graph TD
 * **`route_query`:** Decides if the query needs vector retrieval or can be answered directly.
 * **`retrieve`:** Performs vector similarity search against Qdrant.
 * **`grade_documents`:** Evaluates if retrieved chunks are relevant to the query.
-* **`rewrite_query`:** Reformulates queries when document relevance grading fails, looping back to `retrieve` up to a hard cap of `MAX_RETRIEVAL_RETRIES=3`.
-* **`generate`:** Prompts AWS Bedrock Claude model with retrieved context to synthesize answers.
+* **`rewrite_query`:** Reformulates queries when documents are graded irrelevant, looping back to `retrieve` up to a hard cap of `MAX_RETRIEVAL_RETRIES=3`.
+* **`generate`:** Prompts the configured language model with retrieved context to synthesize answers.
 * **`evaluate`:** Evaluates faithfulness and answer relevancy using automated scoring.
 * **`flag_reindex`:** Flags low-scoring document chunks for re-indexing.
 
