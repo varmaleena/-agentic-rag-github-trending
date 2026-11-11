@@ -2,14 +2,16 @@ import logging
 import time
 
 from fastapi import APIRouter, HTTPException
+from starlette.concurrency import run_in_threadpool
 from pydantic import BaseModel
 
 from app.config import settings
 from app.graph.graph import app_graph
+from app.services import history
+from app.services.telemetry import tracer
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api", tags=["RAG Queries"])
-QUERY_HISTORY = []
 
 
 def graph_config():
@@ -27,7 +29,7 @@ def record_query_history(state, latency_seconds):
         "latency_seconds": round(latency_seconds, 3),
         "timestamp": int(time.time()),
     }
-    QUERY_HISTORY.append(record)
+    history.save(record)
     return record
 
 
@@ -54,12 +56,13 @@ async def execute_query(req: QueryRequest):
 
     started = time.monotonic()
     try:
-        state = await app_graph.ainvoke({"query": query}, config=graph_config())
+        with tracer.start_as_current_span("rag.query"):
+            state = await app_graph.ainvoke({"query": query}, config=graph_config())
     except Exception:
         logger.exception("Query execution failed")
         raise HTTPException(502, "Query execution failed.") from None
 
-    record = record_query_history(state, time.monotonic() - started)
+    record = await run_in_threadpool(record_query_history, state, time.monotonic() - started)
     if not record["answer"]:
         raise HTTPException(502, record["error"])
     return record
@@ -67,12 +70,4 @@ async def execute_query(req: QueryRequest):
 
 @router.get("/dashboard/stats")
 async def get_dashboard_stats():
-    total = len(QUERY_HISTORY)
-    scores = [q["eval_score"] for q in QUERY_HISTORY if q["eval_score"] is not None]
-    return {
-        "last_ingested_at": None,
-        "total_queries": total,
-        "avg_latency_seconds": round(sum(q["latency_seconds"] for q in QUERY_HISTORY) / total, 3) if total else 0,
-        "avg_eval_score": round(sum(scores) / len(scores), 3) if scores else None,
-        "recent_queries": list(reversed(QUERY_HISTORY[-20:])),
-    }
+    return await run_in_threadpool(history.stats)

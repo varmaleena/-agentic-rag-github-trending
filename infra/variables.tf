@@ -10,14 +10,40 @@ variable "environment" {
   default     = "dev"
 }
 
-variable "qdrant_instance_type" {
-  description = "EC2 instance size for self-hosted Qdrant vector database"
+variable "bedrock_model_id" {
+  description = "Bedrock model ID or inference profile ID"
   type        = string
-  default     = "t3.small"
+  default     = "us.amazon.nova-lite-v1:0"
 }
 
-variable "bedrock_model_id" {
-  description = "AWS Bedrock Claude model ID"
-  type        = string
-  default     = "anthropic.claude-3-haiku-20240307-v1:0"
+variable "backend_image" {
+  type = string
+}
+
+variable "ingestion_image" {
+  type = string
+}
+
+variable "acm_certificate_arn" {
+  type = string
+}
+
+variable "qdrant_url" {
+  type = string
+  validation {
+    condition     = startswith(var.qdrant_url, "https://")
+    error_message = "Qdrant must be reachable over HTTPS."
+  }
+}
+
+variable "qdrant_api_key_secret_arn" {
+  type = string
+}
+
+variable "github_token_secret_arn" {
+  type = string
+}
+
+variable "history_database_url_secret_arn" {
+  type = string
 }

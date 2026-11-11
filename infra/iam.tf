@@ -41,7 +41,7 @@ resource "aws_iam_role" "ecs_task_role" {
 
 resource "aws_iam_policy" "bedrock_invoke_policy" {
   name        = "agentic-rag-bedrock-invoke-policy"
-  description = "Allows invoking AWS Bedrock Claude foundation models"
+  description = "Allows the ECS application to invoke Bedrock models"
 
   policy = jsonencode({
     Version = "2012-10-17"
@@ -86,7 +86,26 @@ resource "aws_iam_role_policy_attachment" "lambda_logs" {
   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
 }
 
-resource "aws_iam_role_policy_attachment" "lambda_bedrock" {
-  role       = aws_iam_role.lambda_execution_role.name
-  policy_arn = aws_iam_policy.bedrock_invoke_policy.arn
+resource "aws_iam_role_policy" "ecs_secrets" {
+  role = aws_iam_role.ecs_execution_role.id
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Effect   = "Allow"
+      Action   = "secretsmanager:GetSecretValue"
+      Resource = [var.qdrant_api_key_secret_arn, var.history_database_url_secret_arn]
+    }]
+  })
+}
+
+resource "aws_iam_role_policy" "ingestion_secrets" {
+  role = aws_iam_role.lambda_execution_role.id
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Effect   = "Allow"
+      Action   = "secretsmanager:GetSecretValue"
+      Resource = [var.qdrant_api_key_secret_arn, var.github_token_secret_arn]
+    }]
+  })
 }

@@ -1,0 +1,13 @@
+.git
+.env
+*.env
+*.key
+*.pem
+**/__pycache__
+**/node_modules
+**/.terraform
+.terraform-tools
+.model-cache
+.python-runtime
+.npm
+data

@@ -3,9 +3,11 @@ import logging
 import time
 
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect
+from starlette.concurrency import run_in_threadpool
 
 from app.api.routes import graph_config, record_query_history
 from app.graph.graph import app_graph
+from app.services.telemetry import tracer
 
 logger = logging.getLogger(__name__)
 ws_router = APIRouter(tags=["WebSocket Streaming"])
@@ -27,14 +29,15 @@ async def websocket_chat_endpoint(websocket: WebSocket):
 
             started = time.monotonic()
             try:
-                async for mode, event in app_graph.astream(
-                    {"query": query.strip()}, config=graph_config(), stream_mode=["custom", "values"]
-                ):
-                    if mode == "custom":
-                        await websocket.send_json(event)
-                    else:
-                        state = event
-                record = record_query_history(state, time.monotonic() - started)
+                with tracer.start_as_current_span("rag.query"):
+                    async for mode, event in app_graph.astream(
+                        {"query": query.strip()}, config=graph_config(), stream_mode=["custom", "values"]
+                    ):
+                        if mode == "custom":
+                            await websocket.send_json(event)
+                        else:
+                            state = event
+                record = await run_in_threadpool(record_query_history, state, time.monotonic() - started)
                 if record["answer"]:
                     await websocket.send_json({"type": "stream_end", **record})
                 else:

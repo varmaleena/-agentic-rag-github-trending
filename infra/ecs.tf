@@ -32,6 +32,23 @@ resource "aws_lb_listener" "http" {
   protocol          = "HTTP"
 
   default_action {
+    type = "redirect"
+    redirect {
+      protocol    = "HTTPS"
+      port        = "443"
+      status_code = "HTTP_301"
+    }
+  }
+}
+
+resource "aws_lb_listener" "https" {
+  load_balancer_arn = aws_lb.api_alb.arn
+  port              = 443
+  protocol          = "HTTPS"
+  certificate_arn   = var.acm_certificate_arn
+  ssl_policy        = "ELBSecurityPolicy-TLS13-1-2-2021-06"
+
+  default_action {
     type             = "forward"
     target_group_arn = aws_lb_target_group.api_tg.arn
   }
@@ -41,15 +58,15 @@ resource "aws_ecs_task_definition" "backend" {
   family                   = "agentic-rag-backend-task"
   network_mode             = "awsvpc"
   requires_compatibilities = ["FARGATE"]
-  cpu                      = "256"
-  memory                   = "512"
+  cpu                      = "512"
+  memory                   = "1024"
   execution_role_arn       = aws_iam_role.ecs_execution_role.arn
   task_role_arn            = aws_iam_role.ecs_task_role.arn
 
   container_definitions = jsonencode([
     {
       name      = "fastapi-backend"
-      image     = "agentic-rag-backend:latest"
+      image     = var.backend_image
       essential = true
       portMappings = [
         {
@@ -60,8 +77,11 @@ resource "aws_ecs_task_definition" "backend" {
       environment = [
         { name = "AWS_REGION", value = var.aws_region },
         { name = "BEDROCK_MODEL_ID", value = var.bedrock_model_id },
-        { name = "QDRANT_HOST", value = aws_instance.qdrant_ec2.private_ip },
-        { name = "QDRANT_PORT", value = "6333" }
+        { name = "QDRANT_URL", value = var.qdrant_url }
+      ]
+      secrets = [
+        { name = "QDRANT_API_KEY", valueFrom = var.qdrant_api_key_secret_arn },
+        { name = "HISTORY_DATABASE_URL", valueFrom = var.history_database_url_secret_arn }
       ]
       logConfiguration = {
         logDriver = "awslogs"
@@ -99,5 +119,5 @@ resource "aws_ecs_service" "backend" {
     container_port   = 8000
   }
 
-  depends_on = [aws_lb_listener.http]
+  depends_on = [aws_lb_listener.https, aws_iam_role_policy.ecs_secrets]
 }

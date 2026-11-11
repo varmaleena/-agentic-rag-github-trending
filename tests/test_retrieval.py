@@ -8,14 +8,13 @@ from app.services.qdrant_client import QdrantService
 
 def test_embedding_wrapper(monkeypatch):
     model = Mock()
-    model.encode.side_effect = lambda text, **kwargs: Mock(
-        tolist=lambda: [1.0] * 384 if isinstance(text, str) else [[1.0] * 384 for _ in text]
-    )
-    monkeypatch.setattr("app.services.embeddings._GLOBAL_MODEL", model)
+    model.embed.side_effect = lambda texts: (Mock(tolist=lambda: [1.0] * 384) for _ in texts)
     service = LocalEmbeddingService()
+    monkeypatch.setattr(LocalEmbeddingService, "model", model)
+
     assert len(service.embed_text("query")) == 384
     assert len(service.embed_documents(["first", "second"])) == 2
-    assert model.encode.call_args.kwargs == {"normalize_embeddings": True}
+    model.embed.assert_called_with(["first", "second"])
 
 
 def test_qdrant_flag_is_persisted():

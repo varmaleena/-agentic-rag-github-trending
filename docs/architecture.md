@@ -12,8 +12,8 @@ graph TD
         EB[EventBridge Scheduler - Every 15m] -->|Triggers| L1[AWS Lambda Ingestion Handler]
         L1 -->|1. Search Trending Repos| GH[GitHub REST API]
         L1 -->|2. Chunk & Metadata| CH[Overlapping Chunker]
-        L1 -->|3. Generate Vectors| EMB[sentence-transformers bge-small-en]
-        EMB -->|4. Vector Upsert| QD[Self-Hosted Qdrant DB on EC2]
+        L1 -->|3. Generate Vectors| EMB[FastEmbed BGE small v1.5]
+        EMB -->|4. Vector Upsert| QD[Authenticated Qdrant over HTTPS]
     end
 
     subgraph Agentic Corrective RAG Workflow
@@ -63,6 +63,6 @@ graph TD
 
 * **VPC Networking:** Public subnets across Availability Zones with strict Security Groups.
 * **Compute:** ECS Fargate service running FastAPI backend behind an Application Load Balancer (ALB).
-* **Vector DB:** Qdrant self-hosted on a `t3.small` EC2 instance using Docker and persistent EBS storage.
-* **IAM Security:** Fine-grained IAM roles granting Bedrock invoke permissions to ECS task and Lambda execution roles without static keys.
+* **Vector DB:** The API and ingestion use an authenticated HTTPS Qdrant endpoint.
+* **IAM Security:** ECS tasks use their IAM role for Bedrock. ECS and ingestion read scoped secrets from AWS Secrets Manager.
 

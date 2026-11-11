@@ -1,4 +1,5 @@
 import logging
+import os
 import sys
 import time
 from collections import defaultdict
@@ -11,6 +12,8 @@ sys.path.append(str(Path(__file__).resolve().parent.parent / "backend"))
 from fetch_github import fetch_repository, fetch_trending_repos
 from chunker import chunk_repository
 from screening import contains_prompt_injection
+from secrets_config import read_secret
+from app.config import settings
 from app.services.embeddings import embedding_service
 from app.services.qdrant_client import qdrant_service
 
@@ -31,6 +34,8 @@ def index_repository(repo):
 
 
 def lambda_handler(event=None, context=None):
+    if secret_id := os.environ.get("QDRANT_API_KEY_SECRET_ARN"):
+        settings.QDRANT_API_KEY = read_secret(secret_id)
     qdrant_service.create_collection_if_not_exists()
     flagged = defaultdict(set)
     for point in qdrant_service.flagged_chunks():

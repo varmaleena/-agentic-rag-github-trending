@@ -1,0 +1,813 @@
+{
+  "Plain RAG": [
+    {
+      "question": "Does the TV debloating tool require rooting the device or using a cable?",
+      "hit_at_5": false,
+      "faithfulness": 1,
+      "relevancy": 1,
+      "error": null,
+      "graph_path": [
+        "retrieve",
+        "generate",
+        "evaluate"
+      ]
+    },
+    {
+      "question": "Does CleanYourTV run on a Roku or LG TV?",
+      "hit_at_5": true,
+      "faithfulness": 0.9,
+      "relevancy": 0.9,
+      "error": null,
+      "graph_path": [
+        "retrieve",
+        "generate",
+        "evaluate"
+      ]
+    },
+    {
+      "question": "What look does CleanYourTV use for its replacement launcher?",
+      "hit_at_5": true,
+      "faithfulness": 1,
+      "relevancy": 1,
+      "error": null,
+      "graph_path": [
+        "retrieve",
+        "generate",
+        "evaluate"
+      ]
+    },
+    {
+      "question": "Does the CleanYourTV project itself publish an app in any app store?",
+      "hit_at_5": true,
+      "faithfulness": 1,
+      "relevancy": 1,
+      "error": null,
+      "graph_path": [
+        "retrieve",
+        "generate",
+        "evaluate"
+      ]
+    },
+    {
+      "question": "What language is the clean-room engine for studying websites, apps and games written in?",
+      "hit_at_5": false,
+      "faithfulness": 0.5,
+      "relevancy": 0.5,
+      "error": null,
+      "graph_path": [
+        "retrieve",
+        "generate",
+        "evaluate"
+      ]
+    },
+    {
+      "question": "After a coding agent builds a new project in Craft Anything, how does it improve the result?",
+      "hit_at_5": false,
+      "faithfulness": 1,
+      "relevancy": 1,
+      "error": null,
+      "graph_path": [
+        "retrieve",
+        "generate",
+        "evaluate"
+      ]
+    },
+    {
+      "question": "Which operating systems does Craft Anything list besides Windows and macOS?",
+      "hit_at_5": false,
+      "faithfulness": 0.8,
+      "relevancy": 0.6,
+      "error": null,
+      "graph_path": [
+        "retrieve",
+        "generate",
+        "evaluate"
+      ]
+    },
+    {
+      "question": "What license options does Craft Anything give users?",
+      "hit_at_5": false,
+      "faithfulness": 1,
+      "relevancy": 1,
+      "error": null,
+      "graph_path": [
+        "retrieve",
+        "generate",
+        "evaluate"
+      ]
+    },
+    {
+      "question": "What model does the DeepInfer README list as supported?",
+      "hit_at_5": true,
+      "faithfulness": 1,
+      "relevancy": 1,
+      "error": null,
+      "graph_path": [
+        "retrieve",
+        "generate",
+        "evaluate"
+      ]
+    },
+    {
+      "question": "What does DeepInfer's SWA bounded replay reduce?",
+      "hit_at_5": true,
+      "faithfulness": 1,
+      "relevancy": 1,
+      "error": null,
+      "graph_path": [
+        "retrieve",
+        "generate",
+        "evaluate"
+      ]
+    },
+    {
+      "question": "Which CUDA version does DeepInfer require on NVIDIA?",
+      "hit_at_5": true,
+      "faithfulness": 1,
+      "relevancy": 1,
+      "error": null,
+      "graph_path": [
+        "retrieve",
+        "generate",
+        "evaluate"
+      ]
+    },
+    {
+      "question": "Does the DeepInfer open-source release include the KV cache system for a complete inference service?",
+      "hit_at_5": true,
+      "faithfulness": 1,
+      "relevancy": 1,
+      "error": null,
+      "graph_path": [
+        "retrieve",
+        "generate",
+        "evaluate"
+      ]
+    },
+    {
+      "question": "Where does DeepInfer expect the local model path to be configured for offline inference?",
+      "hit_at_5": true,
+      "faithfulness": 1,
+      "relevancy": 1,
+      "error": null,
+      "graph_path": [
+        "retrieve",
+        "generate",
+        "evaluate"
+      ]
+    },
+    {
+      "question": "Which optional source can send work requests to the single-repo DeepSeek Harness prototype besides GitHub?",
+      "hit_at_5": true,
+      "faithfulness": 1,
+      "relevancy": 1,
+      "error": null,
+      "graph_path": [
+        "retrieve",
+        "generate",
+        "evaluate"
+      ]
+    },
+    {
+      "question": "Where does the DeepSeek superagent post a reply after handling a request?",
+      "hit_at_5": true,
+      "faithfulness": 1,
+      "relevancy": 1,
+      "error": null,
+      "graph_path": [
+        "retrieve",
+        "generate",
+        "evaluate"
+      ]
+    },
+    {
+      "question": "How does an operator see when the proactive coding prototype needs human attention?",
+      "hit_at_5": false,
+      "faithfulness": 0.8,
+      "relevancy": 0.6,
+      "error": null,
+      "graph_path": [
+        "retrieve",
+        "generate",
+        "evaluate"
+      ]
+    },
+    {
+      "question": "What project command runs the prototype's typecheck, tests and build?",
+      "hit_at_5": false,
+      "faithfulness": 0.8,
+      "relevancy": 0.7,
+      "error": null,
+      "graph_path": [
+        "retrieve",
+        "generate",
+        "evaluate"
+      ]
+    },
+    {
+      "question": "What operating system does the mobile DeepSeek Harness client target?",
+      "hit_at_5": true,
+      "faithfulness": 1,
+      "relevancy": 1,
+      "error": null,
+      "graph_path": [
+        "retrieve",
+        "generate",
+        "evaluate"
+      ]
+    },
+    {
+      "question": "Where can users download a DSH Go APK?",
+      "hit_at_5": false,
+      "faithfulness": 1,
+      "relevancy": 1,
+      "error": null,
+      "graph_path": [
+        "retrieve",
+        "generate",
+        "evaluate"
+      ]
+    },
+    {
+      "question": "What license does the DSH Go README list?",
+      "hit_at_5": true,
+      "faithfulness": 1,
+      "relevancy": 1,
+      "error": null,
+      "graph_path": [
+        "retrieve",
+        "generate",
+        "evaluate"
+      ]
+    },
+    {
+      "question": "What support status does the gpu-unlock README give RTX 20 Turing cards?",
+      "hit_at_5": true,
+      "faithfulness": 1,
+      "relevancy": 1,
+      "error": null,
+      "graph_path": [
+        "retrieve",
+        "generate",
+        "evaluate"
+      ]
+    },
+    {
+      "question": "Does gpu-unlock support Blackwell cards in the RTX 50 series?",
+      "hit_at_5": true,
+      "faithfulness": 1,
+      "relevancy": 1,
+      "error": null,
+      "graph_path": [
+        "retrieve",
+        "generate",
+        "evaluate"
+      ]
+    },
+    {
+      "question": "What operating system is the gpu-unlock kernel module for?",
+      "hit_at_5": false,
+      "faithfulness": 1,
+      "relevancy": 1,
+      "error": null,
+      "graph_path": [
+        "retrieve",
+        "generate",
+        "evaluate"
+      ]
+    },
+    {
+      "question": "Which numerical formats does the GeForce tensor throughput cap affect according to gpu-unlock?",
+      "hit_at_5": true,
+      "faithfulness": 1,
+      "relevancy": 1,
+      "error": null,
+      "graph_path": [
+        "retrieve",
+        "generate",
+        "evaluate"
+      ]
+    },
+    {
+      "question": "What graphics API does nxnative use to rebuild Switch graphics on Apple devices?",
+      "hit_at_5": true,
+      "faithfulness": 1,
+      "relevancy": 1,
+      "error": null,
+      "graph_path": [
+        "retrieve",
+        "generate",
+        "evaluate"
+      ]
+    },
+    {
+      "question": "What is the minimum iPhone model generation listed for nxnative?",
+      "hit_at_5": false,
+      "faithfulness": 0.9,
+      "relevancy": 0.9,
+      "error": null,
+      "graph_path": [
+        "retrieve",
+        "generate",
+        "evaluate"
+      ]
+    },
+    {
+      "question": "What package format does nxnative produce for sideloading onto an iPhone or iPad?",
+      "hit_at_5": true,
+      "faithfulness": 1,
+      "relevancy": 1,
+      "error": null,
+      "graph_path": [
+        "retrieve",
+        "generate",
+        "evaluate"
+      ]
+    },
+    {
+      "question": "Which coding assistants does the unslop README explicitly say it supports?",
+      "hit_at_5": true,
+      "faithfulness": 1,
+      "relevancy": 1,
+      "error": null,
+      "graph_path": [
+        "retrieve",
+        "generate",
+        "evaluate"
+      ]
+    },
+    {
+      "question": "What command invokes the unslop skill in Codex?",
+      "hit_at_5": true,
+      "faithfulness": 1,
+      "relevancy": 1,
+      "error": null,
+      "graph_path": [
+        "retrieve",
+        "generate",
+        "evaluate"
+      ]
+    },
+    {
+      "question": "What license does the unslop README identify?",
+      "hit_at_5": false,
+      "faithfulness": 1,
+      "relevancy": 0,
+      "error": null,
+      "graph_path": [
+        "retrieve",
+        "generate",
+        "evaluate"
+      ]
+    }
+  ],
+  "Corrective RAG": [
+    {
+      "question": "Does the TV debloating tool require rooting the device or using a cable?",
+      "hit_at_5": false,
+      "faithfulness": 1,
+      "relevancy": 1,
+      "error": null,
+      "graph_path": [
+        "route_query",
+        "retrieve",
+        "grade_documents",
+        "generate",
+        "evaluate"
+      ]
+    },
+    {
+      "question": "Does CleanYourTV run on a Roku or LG TV?",
+      "hit_at_5": true,
+      "faithfulness": 0.9,
+      "relevancy": 0.9,
+      "error": null,
+      "graph_path": [
+        "route_query",
+        "retrieve",
+        "grade_documents",
+        "generate",
+        "evaluate"
+      ]
+    },
+    {
+      "question": "What look does CleanYourTV use for its replacement launcher?",
+      "hit_at_5": true,
+      "faithfulness": 1,
+      "relevancy": 1,
+      "error": null,
+      "graph_path": [
+        "route_query",
+        "retrieve",
+        "grade_documents",
+        "generate",
+        "evaluate"
+      ]
+    },
+    {
+      "question": "Does the CleanYourTV project itself publish an app in any app store?",
+      "hit_at_5": true,
+      "faithfulness": 1,
+      "relevancy": 1,
+      "error": null,
+      "graph_path": [
+        "route_query",
+        "retrieve",
+        "grade_documents",
+        "generate",
+        "evaluate"
+      ]
+    },
+    {
+      "question": "What language is the clean-room engine for studying websites, apps and games written in?",
+      "hit_at_5": false,
+      "faithfulness": 0.8,
+      "relevancy": 0.6,
+      "error": null,
+      "graph_path": [
+        "route_query",
+        "retrieve",
+        "grade_documents",
+        "generate",
+        "evaluate"
+      ]
+    },
+    {
+      "question": "After a coding agent builds a new project in Craft Anything, how does it improve the result?",
+      "hit_at_5": false,
+      "faithfulness": 1,
+      "relevancy": 1,
+      "error": null,
+      "graph_path": [
+        "route_query",
+        "retrieve",
+        "grade_documents",
+        "generate",
+        "evaluate"
+      ]
+    },
+    {
+      "question": "Which operating systems does Craft Anything list besides Windows and macOS?",
+      "hit_at_5": false,
+      "faithfulness": 1,
+      "relevancy": 1,
+      "error": null,
+      "graph_path": [
+        "route_query",
+        "retrieve",
+        "grade_documents",
+        "rewrite_query",
+        "retrieve",
+        "grade_documents",
+        "generate",
+        "evaluate"
+      ]
+    },
+    {
+      "question": "What license options does Craft Anything give users?",
+      "hit_at_5": false,
+      "faithfulness": 1,
+      "relevancy": 1,
+      "error": null,
+      "graph_path": [
+        "route_query",
+        "retrieve",
+        "grade_documents",
+        "generate",
+        "evaluate"
+      ]
+    },
+    {
+      "question": "What model does the DeepInfer README list as supported?",
+      "hit_at_5": true,
+      "faithfulness": 1,
+      "relevancy": 1,
+      "error": null,
+      "graph_path": [
+        "route_query",
+        "retrieve",
+        "grade_documents",
+        "generate",
+        "evaluate"
+      ]
+    },
+    {
+      "question": "What does DeepInfer's SWA bounded replay reduce?",
+      "hit_at_5": true,
+      "faithfulness": 1,
+      "relevancy": 1,
+      "error": null,
+      "graph_path": [
+        "route_query",
+        "retrieve",
+        "grade_documents",
+        "generate",
+        "evaluate"
+      ]
+    },
+    {
+      "question": "Which CUDA version does DeepInfer require on NVIDIA?",
+      "hit_at_5": true,
+      "faithfulness": 1,
+      "relevancy": 1,
+      "error": null,
+      "graph_path": [
+        "route_query",
+        "retrieve",
+        "grade_documents",
+        "generate",
+        "evaluate"
+      ]
+    },
+    {
+      "question": "Does the DeepInfer open-source release include the KV cache system for a complete inference service?",
+      "hit_at_5": true,
+      "faithfulness": 1,
+      "relevancy": 1,
+      "error": null,
+      "graph_path": [
+        "route_query",
+        "retrieve",
+        "grade_documents",
+        "generate",
+        "evaluate"
+      ]
+    },
+    {
+      "question": "Where does DeepInfer expect the local model path to be configured for offline inference?",
+      "hit_at_5": true,
+      "faithfulness": 1,
+      "relevancy": 1,
+      "error": null,
+      "graph_path": [
+        "route_query",
+        "retrieve",
+        "grade_documents",
+        "generate",
+        "evaluate"
+      ]
+    },
+    {
+      "question": "Which optional source can send work requests to the single-repo DeepSeek Harness prototype besides GitHub?",
+      "hit_at_5": true,
+      "faithfulness": 1,
+      "relevancy": 1,
+      "error": null,
+      "graph_path": [
+        "route_query",
+        "retrieve",
+        "grade_documents",
+        "generate",
+        "evaluate"
+      ]
+    },
+    {
+      "question": "Where does the DeepSeek superagent post a reply after handling a request?",
+      "hit_at_5": true,
+      "faithfulness": null,
+      "relevancy": null,
+      "error": null,
+      "graph_path": [
+        "route_query",
+        "retrieve",
+        "grade_documents",
+        "rewrite_query",
+        "retrieve",
+        "grade_documents",
+        "rewrite_query",
+        "retrieve",
+        "grade_documents",
+        "rewrite_query",
+        "retrieve",
+        "grade_documents",
+        "generate",
+        "evaluate"
+      ]
+    },
+    {
+      "question": "How does an operator see when the proactive coding prototype needs human attention?",
+      "hit_at_5": false,
+      "faithfulness": null,
+      "relevancy": null,
+      "error": null,
+      "graph_path": [
+        "route_query",
+        "retrieve",
+        "grade_documents",
+        "rewrite_query",
+        "retrieve",
+        "grade_documents",
+        "rewrite_query",
+        "retrieve",
+        "grade_documents",
+        "rewrite_query",
+        "retrieve",
+        "grade_documents",
+        "generate",
+        "evaluate"
+      ]
+    },
+    {
+      "question": "What project command runs the prototype's typecheck, tests and build?",
+      "hit_at_5": false,
+      "faithfulness": 1,
+      "relevancy": 1,
+      "error": null,
+      "graph_path": [
+        "route_query",
+        "retrieve",
+        "grade_documents",
+        "generate",
+        "evaluate"
+      ]
+    },
+    {
+      "question": "What operating system does the mobile DeepSeek Harness client target?",
+      "hit_at_5": true,
+      "faithfulness": 1,
+      "relevancy": 1,
+      "error": null,
+      "graph_path": [
+        "route_query",
+        "retrieve",
+        "grade_documents",
+        "generate",
+        "evaluate"
+      ]
+    },
+    {
+      "question": "Where can users download a DSH Go APK?",
+      "hit_at_5": false,
+      "faithfulness": 1,
+      "relevancy": 1,
+      "error": null,
+      "graph_path": [
+        "route_query",
+        "retrieve",
+        "grade_documents",
+        "generate",
+        "evaluate"
+      ]
+    },
+    {
+      "question": "What license does the DSH Go README list?",
+      "hit_at_5": true,
+      "faithfulness": 1,
+      "relevancy": 1,
+      "error": null,
+      "graph_path": [
+        "route_query",
+        "retrieve",
+        "grade_documents",
+        "generate",
+        "evaluate"
+      ]
+    },
+    {
+      "question": "What support status does the gpu-unlock README give RTX 20 Turing cards?",
+      "hit_at_5": true,
+      "faithfulness": 1,
+      "relevancy": 1,
+      "error": null,
+      "graph_path": [
+        "route_query",
+        "retrieve",
+        "grade_documents",
+        "generate",
+        "evaluate"
+      ]
+    },
+    {
+      "question": "Does gpu-unlock support Blackwell cards in the RTX 50 series?",
+      "hit_at_5": true,
+      "faithfulness": 1,
+      "relevancy": 1,
+      "error": null,
+      "graph_path": [
+        "route_query",
+        "retrieve",
+        "grade_documents",
+        "rewrite_query",
+        "retrieve",
+        "grade_documents",
+        "generate",
+        "evaluate"
+      ]
+    },
+    {
+      "question": "What operating system is the gpu-unlock kernel module for?",
+      "hit_at_5": false,
+      "faithfulness": 1,
+      "relevancy": 1,
+      "error": null,
+      "graph_path": [
+        "route_query",
+        "retrieve",
+        "grade_documents",
+        "generate",
+        "evaluate"
+      ]
+    },
+    {
+      "question": "Which numerical formats does the GeForce tensor throughput cap affect according to gpu-unlock?",
+      "hit_at_5": true,
+      "faithfulness": 1,
+      "relevancy": 1,
+      "error": null,
+      "graph_path": [
+        "route_query",
+        "retrieve",
+        "grade_documents",
+        "generate",
+        "evaluate"
+      ]
+    },
+    {
+      "question": "What graphics API does nxnative use to rebuild Switch graphics on Apple devices?",
+      "hit_at_5": true,
+      "faithfulness": 1,
+      "relevancy": 1,
+      "error": null,
+      "graph_path": [
+        "route_query",
+        "retrieve",
+        "grade_documents",
+        "generate",
+        "evaluate"
+      ]
+    },
+    {
+      "question": "What is the minimum iPhone model generation listed for nxnative?",
+      "hit_at_5": false,
+      "faithfulness": 1,
+      "relevancy": 1,
+      "error": null,
+      "graph_path": [
+        "route_query",
+        "retrieve",
+        "grade_documents",
+        "generate",
+        "evaluate"
+      ]
+    },
+    {
+      "question": "What package format does nxnative produce for sideloading onto an iPhone or iPad?",
+      "hit_at_5": true,
+      "faithfulness": 0.9,
+      "relevancy": 1.0,
+      "error": null,
+      "graph_path": [
+        "route_query",
+        "retrieve",
+        "grade_documents",
+        "generate",
+        "evaluate"
+      ]
+    },
+    {
+      "question": "Which coding assistants does the unslop README explicitly say it supports?",
+      "hit_at_5": true,
+      "faithfulness": 1,
+      "relevancy": 1,
+      "error": null,
+      "graph_path": [
+        "route_query",
+        "retrieve",
+        "grade_documents",
+        "generate",
+        "evaluate"
+      ]
+    },
+    {
+      "question": "What command invokes the unslop skill in Codex?",
+      "hit_at_5": true,
+      "faithfulness": 0.9,
+      "relevancy": 0.9,
+      "error": null,
+      "graph_path": [
+        "route_query",
+        "retrieve",
+        "grade_documents",
+        "generate",
+        "evaluate"
+      ]
+    },
+    {
+      "question": "What license does the unslop README identify?",
+      "hit_at_5": false,
+      "faithfulness": 1,
+      "relevancy": 1,
+      "error": null,
+      "graph_path": [
+        "route_query",
+        "retrieve",
+        "grade_documents",
+        "rewrite_query",
+        "retrieve",
+        "grade_documents",
+        "generate",
+        "evaluate"
+      ]
+    }
+  ]
+}

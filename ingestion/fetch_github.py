@@ -1,15 +1,17 @@
 import base64
-import os
+
 from datetime import date, timedelta
 
 import httpx
+
+from secrets_config import github_token
 
 GITHUB_API_URL = "https://api.github.com"
 
 
 def github_client():
     headers = {"Accept": "application/vnd.github+json", "User-Agent": "Agentic-RAG-Ingestion"}
-    if token := os.environ.get("GITHUB_TOKEN"):
+    if token := github_token():
         headers["Authorization"] = f"Bearer {token}"
     return httpx.Client(base_url=GITHUB_API_URL, headers=headers, timeout=15, follow_redirects=True)
 

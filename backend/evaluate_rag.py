@@ -51,12 +51,22 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("golden_set", type=Path)
     parser.add_argument("--output", type=Path, required=True)
+    parser.add_argument("--snapshot", type=Path, help="Index a pinned GitHub corpus in local Qdrant")
+    parser.add_argument("--readme-cache", type=Path, help="Optional local README cache for the snapshot")
     args = parser.parse_args()
     questions = load_questions(args.golden_set)
+    if args.snapshot:
+        from benchmark_snapshot import index_snapshot
+
+        points = index_snapshot(args.snapshot, args.readme_cache)
+        print(f"Indexed {points} snapshot chunks", flush=True)
     results = {}
     for name, corrective in (("Plain RAG", False), ("Corrective RAG", True)):
         graph = build_graph(corrective=corrective, write_reindex_flags=False)
-        results[name] = [run_case(graph, case) for case in questions]
+        results[name] = []
+        for number, case in enumerate(questions, 1):
+            results[name].append(run_case(graph, case))
+            print(f"{name}: {number}/{len(questions)}", flush=True)
 
     args.output.write_text(json.dumps(results, ensure_ascii=False, indent=2), encoding="utf-8")
     print("| System | N | Hit@5 | Faithfulness (scored/total) | Relevancy (scored/total) |")

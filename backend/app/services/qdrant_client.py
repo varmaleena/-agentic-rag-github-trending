@@ -15,7 +15,8 @@ class QdrantService:
     @property
     def client(self):
         if self._client is None:
-            self._client = QdrantClient(host=self.host, port=self.port, timeout=10)
+            address = {"url": settings.QDRANT_URL} if settings.QDRANT_URL else {"host": self.host, "port": self.port}
+            self._client = QdrantClient(**address, api_key=settings.QDRANT_API_KEY or None, timeout=10)
         return self._client
 
     def create_collection_if_not_exists(self):

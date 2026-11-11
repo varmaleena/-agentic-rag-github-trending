@@ -1,3 +1,4 @@
+import { websocketEndpoint } from '../api';
 import React, { useState, useEffect, useRef } from 'react';
 import { Send, Bot, User, ArrowRight } from 'lucide-react';
 
@@ -22,7 +23,7 @@ export default function ChatPanel() {
   ];
 
   useEffect(() => {
-    const wsUrl = `ws://${window.location.hostname}:8000/ws/chat`;
+    const wsUrl = websocketEndpoint('/ws/chat');
     const ws = new WebSocket(wsUrl);
     wsRef.current = ws;
 

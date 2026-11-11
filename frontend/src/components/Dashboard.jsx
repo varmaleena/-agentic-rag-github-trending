@@ -1,3 +1,4 @@
+import { apiEndpoint } from '../api';
 import React, { useState, useEffect } from 'react';
 import { Clock, Zap, Award, RefreshCw, GitBranch, Server } from 'lucide-react';
 
@@ -14,7 +15,7 @@ export default function Dashboard() {
   const fetchStats = async () => {
     setIsLoading(true);
     try {
-      const res = await fetch('http://localhost:8000/api/dashboard/stats');
+      const res = await fetch(apiEndpoint('/api/dashboard/stats'));
       if (res.ok) {
         const data = await res.json();
         setStats(data);

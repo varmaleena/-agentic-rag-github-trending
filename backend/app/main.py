@@ -1,12 +1,30 @@
+from contextlib import asynccontextmanager
+import os
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.config import settings
 from app.api.routes import router as api_router
 from app.api.websocket import ws_router
 
+from app.services.telemetry import setup_tracing
+
+
+@asynccontextmanager
+async def lifespan(app):
+    endpoint = os.environ.get("OTEL_EXPORTER_OTLP_TRACES_ENDPOINT") or os.environ.get("OTEL_EXPORTER_OTLP_ENDPOINT")
+    provider = setup_tracing() if endpoint else None
+    try:
+        yield
+    finally:
+        if provider:
+            provider.shutdown()
+
+
 app = FastAPI(
+    lifespan=lifespan,
     title="Agentic RAG for GitHub Trending Repos",
-    description="Backend service providing real-time trending GitHub repository RAG via LangGraph, Qdrant, and AWS Bedrock.",
+    description="Backend service providing real-time trending GitHub repository RAG via LangGraph, Qdrant, and Vertex AI or Bedrock.",
     version="1.0.0"
 )
 

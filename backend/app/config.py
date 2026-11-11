@@ -8,8 +8,12 @@ class Settings(BaseSettings):
     GEMINI_MODEL: str = ""
 
     AWS_REGION: str = "us-east-1"
-    BEDROCK_MODEL_ID: str = "anthropic.claude-3-haiku-20240307-v1:0"
+    BEDROCK_MODEL_ID: str = "us.amazon.nova-lite-v1:0"
     
+    HISTORY_DATABASE_URL: str = ""
+    HISTORY_DB_PATH: str = "data/query_history.sqlite3"
+    QDRANT_URL: str = ""
+    QDRANT_API_KEY: str = ""
     QDRANT_HOST: str = "localhost"
     QDRANT_PORT: int = 6333
     QDRANT_COLLECTION_NAME: str = "github_repos"

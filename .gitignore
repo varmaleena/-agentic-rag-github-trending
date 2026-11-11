@@ -60,3 +60,4 @@ ingestion.zip
 *.swo
 .DS_Store
 Thumbs.db
+/data/

@@ -12,6 +12,8 @@ from app.graph.nodes.retrieve import retrieve_node
 from app.graph.nodes.rewrite_query import rewrite_query_node
 from app.graph.nodes.route_query import route_query_node
 from app.graph.state import AgentState
+from app.services.telemetry import node_span
+from opentelemetry.trace import StatusCode
 
 
 def decide_to_route(state):
@@ -37,7 +39,11 @@ def tracked(name, node):
     @wraps(node)
     def execute(state):
         get_stream_writer()({"type": "node_transition", "node": name, "status": "active"})
-        return {**node(state), "graph_path": [name]}
+        with node_span(name, state.get("retries", 0)) as span:
+            update = node(state)
+            if "error" in update:
+                span.set_status(StatusCode.ERROR)
+            return {**update, "graph_path": [name]}
 
     return execute
 

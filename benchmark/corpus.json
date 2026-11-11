@@ -1,0 +1,66 @@
+[
+  {
+    "repo_name": "Gathin23/cleanyourtv",
+    "description": "Debloat any Android or Google TV over Wi-Fi and get an Apple TV-style home.",
+    "stars": 56260,
+    "language": "Python",
+    "url": "https://github.com/Gathin23/cleanyourtv",
+    "readme_blob": "66d0a5b7f040e16e23e3190f44932400c4e87c1b"
+  },
+  {
+    "repo_name": "storytold/craft-anything",
+    "description": "Craft Anything: understand how any software works, and craft your own.",
+    "stars": 27716,
+    "language": "Rust",
+    "url": "https://github.com/storytold/craft-anything",
+    "readme_blob": "02a6b393f96f3e31489e94b47f3c1fd0f0bee3ac"
+  },
+  {
+    "repo_name": "deepseek-ai/DeepInfer",
+    "description": "DeepInfer: High-performance, large-scale inference framework for DeepSeek models",
+    "stars": 25849,
+    "language": "Python",
+    "url": "https://github.com/deepseek-ai/DeepInfer",
+    "readme_blob": "7143caadd1258f56295e2c7766889478556836b3"
+  },
+  {
+    "repo_name": "deepseek-ai/dsh-superagent-prototype",
+    "description": "Towards a More Autonomous Agent System",
+    "stars": 22395,
+    "language": "TypeScript",
+    "url": "https://github.com/deepseek-ai/dsh-superagent-prototype",
+    "readme_blob": "39e1c4af122f11dd72ac0d2b34b79d6f8ae259ea"
+  },
+  {
+    "repo_name": "ccch1mneyyy/dsh-Go",
+    "description": "dsh-go — DeepSeek Harness 装进口袋：手机本机运行，也能遥控你的电脑。",
+    "stars": 19370,
+    "language": "Dart",
+    "url": "https://github.com/ccch1mneyyy/dsh-Go",
+    "readme_blob": "f5d4f59d2a12c281defbfd0d8e90491119a262d0"
+  },
+  {
+    "repo_name": "Zagitta/gpu-unlock",
+    "description": "Your GeForce runs AI at half speed. This fixes it for 20/30/40 series cards. Up to 2× FP16 / BF16 / TF32 tensor throughput",
+    "stars": 18652,
+    "language": "C",
+    "url": "https://github.com/Zagitta/gpu-unlock",
+    "readme_blob": "46199d5eef4e30ca526eba7f12b535afaa24264c"
+  },
+  {
+    "repo_name": "seedds/nxnative",
+    "description": "Switch games running natively on iPhone, iPad and Mac: an NSP folder becomes an unsigned IPA (NSO rewriter, Horizon HLE host, NVN→Metal)",
+    "stars": 14695,
+    "language": "Python",
+    "url": "https://github.com/seedds/nxnative",
+    "readme_blob": "5e620655cc75209bbcf076ef557c9e3fdc6dcb64"
+  },
+  {
+    "repo_name": "heydamir/unslop",
+    "description": "A Claude skill that turns vibecoded, AI-looking UI into a designed interface",
+    "stars": 14215,
+    "language": "JavaScript",
+    "url": "https://github.com/heydamir/unslop",
+    "readme_blob": "c80dc7af576b1b8e87751d2ef921e669d1d68cde"
+  }
+]

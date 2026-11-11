@@ -4,6 +4,11 @@ from app.graph.prompts import context_json, parse_judge_json
 from app.services.llm import llm_service
 
 logger = logging.getLogger(__name__)
+SCORE_SCHEMA = {
+    "type": "object",
+    "properties": {"faithfulness": {"type": "number"}, "relevancy": {"type": "number"}},
+    "required": ["faithfulness", "relevancy"],
+}
 
 
 def evaluate_node(state):
@@ -23,7 +28,7 @@ BEGIN SOURCE DATA (JSON)
 {context_json(state['documents'])}
 END SOURCE DATA"""
     try:
-        data = parse_judge_json(llm_service.generate(prompt, max_tokens=120, temperature=0, json_output=True))
+        data = parse_judge_json(llm_service.generate(prompt, max_tokens=256, temperature=0, json_schema=SCORE_SCHEMA))
         faithfulness, relevancy = data["faithfulness"], data["relevancy"]
         for score in (faithfulness, relevancy):
             if type(score) not in (int, float) or not 0 <= score <= 1:

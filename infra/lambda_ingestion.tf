@@ -1,18 +1,18 @@
 resource "aws_lambda_function" "github_ingestion_lambda" {
-  filename         = "ingestion.zip" # Packaged Lambda ZIP artifact
-  function_name    = "agentic-rag-github-ingestion"
-  role             = aws_iam_role.lambda_execution_role.arn
-  handler          = "lambda_handler.lambda_handler"
-  runtime          = "python3.11"
-  timeout          = 300
-  memory_size      = 512
+  package_type                   = "Image"
+  image_uri                      = var.ingestion_image
+  function_name                  = "agentic-rag-github-ingestion"
+  role                           = aws_iam_role.lambda_execution_role.arn
+  timeout                        = 300
+  memory_size                    = 1024
+  reserved_concurrent_executions = 1
 
   environment {
     variables = {
-      AWS_REGION      = var.aws_region
-      QDRANT_HOST     = aws_instance.qdrant_ec2.private_ip
-      QDRANT_PORT     = "6333"
-      GITHUB_TOKEN    = ""
+      QDRANT_URL                = var.qdrant_url
+      QDRANT_API_KEY_SECRET_ARN = var.qdrant_api_key_secret_arn
+      GITHUB_TOKEN_SECRET_ARN   = var.github_token_secret_arn
+      FASTEMBED_CACHE_PATH      = "/tmp/fastembed"
     }
   }
 }
